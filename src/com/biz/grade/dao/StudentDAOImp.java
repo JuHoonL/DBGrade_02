@@ -1,7 +1,6 @@
 package com.biz.grade.dao;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -9,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.biz.grade.util.DBConnection;
+import com.biz.grade.util.DBContract;
 import com.biz.grade.vo.StudentVO;
 
 public class StudentDAOImp implements StudentDAO {
@@ -22,14 +22,34 @@ public class StudentDAOImp implements StudentDAO {
 
 	@Override
 	public int insert(StudentVO vo) {
-		// TODO Auto-generated method stub
+		// TODO 학생정보 추가
+		String sql = String.format(" INSERT INTO %s ", DBContract.TABLE_STUDENT);
+		sql += " VALUES (?,?,?,?)";
+		
+		PreparedStatement ps;
+		
+		try {
+			ps = dbConn.prepareStatement(sql);
+			ps.setString(1, vo.getSt_num());
+			ps.setString(2, vo.getSt_name());
+			ps.setString(3, vo.getSt_tel());
+			ps.setString(4, vo.getSt_addr());
+			
+			int ret = ps.executeUpdate();
+			
+			return ret;
+			
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		return 0;
 	}
 
 	@Override
 	public List<StudentVO> selectAll() {
 		// TODO 전체 학생의 데이터 조회하여 List로 리턴
-		String sql = "SELECT * FROM tbl_student";
+		String sql = String.format(" SELECT * FROM %s", DBContract.TABLE_STUDENT);
 		
 		PreparedStatement ps;
 		List<StudentVO> stdList = new ArrayList();
@@ -41,10 +61,10 @@ public class StudentDAOImp implements StudentDAO {
 			
 			while(rs.next()) {
 				StudentVO vo = new StudentVO(
-						rs.getString("st_num"),
-						rs.getString("st_name"),
-						rs.getString("st_tel"),
-						rs.getString("st_addr")
+						rs.getString(DBContract.ST_COLUMN.ST_NUM),
+						rs.getString(DBContract.ST_COLUMN.ST_NAME),
+						rs.getString(DBContract.ST_COLUMN.ST_TEL),
+						rs.getString(DBContract.ST_COLUMN.ST_ADDR)
 						);
 				stdList.add(vo);
 			}
@@ -62,14 +82,44 @@ public class StudentDAOImp implements StudentDAO {
 	@Override
 	public StudentVO findByNum(String st_num) {
 		// TODO 학번으로 조회하여 VO를 리턴
-		String sql = " SELECT * FROM tbl_student ";
-		sql += " WHERE st_num = '" + st_num + "' ";
+		String sql = String.format(" SELECT * FROM %s ", DBContract.TABLE_STUDENT);
+		sql += String.format(" WHERE %s = ? ", DBContract.ST_COLUMN.ST_NUM);
 		
 		PreparedStatement ps;
 		
 		try {
 			ps = dbConn.prepareStatement(sql);
-//			ps.setString(1, st_num);
+			ps.setInt(1, Integer.valueOf(st_num));
+			
+			ResultSet rs = ps.executeQuery();
+			if(rs.next()) {
+				StudentVO vo = new StudentVO(
+						rs.getString(DBContract.ST_COLUMN.ST_NUM),
+						rs.getString(DBContract.ST_COLUMN.ST_NAME),
+						rs.getString(DBContract.ST_COLUMN.ST_TEL),
+						rs.getString(DBContract.ST_COLUMN.ST_ADDR)
+						);
+				
+				return vo;
+			}
+			return null;
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	public StudentVO findByNum01(String st_num) {
+		// TODO 학번으로 조회하여 VO를 리턴
+		String sql = String.format(" SELECT * FROM %s ", DBContract.TABLE_STUDENT);
+		sql += String.format(" WHERE %s = ? ", DBContract.ST_COLUMN.ST_NUM);
+		
+		PreparedStatement ps;
+		
+		try {
+			ps = dbConn.prepareStatement(sql);
+			ps.setInt(1, Integer.valueOf(st_num));
 			
 			ResultSet rs = ps.executeQuery();
 			if(rs.next()) {
@@ -90,16 +140,41 @@ public class StudentDAOImp implements StudentDAO {
 		return null;
 	}
 
+
 	@Override
 	public List<StudentVO> findByName(String st_name) {
 		// TODO 이름으로 조회하여 List로 리턴
-		String sql = "SELECT * FROM tbl_student";
-		sql += " WHERE st_name = ? ";
+		String sql = String.format(" SELECT * FROM %s ", DBContract.TABLE_STUDENT);
+		sql += String.format(" WHERE %s LIKE ? ", DBContract.ST_COLUMN.ST_NAME);
 		
 		/*
 		 * SQL의 LIKE 키워드를 사용해서 SQL을 작성하려면
 		 * sql += sql += " WHERE st_name LIKE '%" + st_name + "%' ";
 		 */
+		
+		PreparedStatement ps;
+		
+		try {
+			ps = dbConn.prepareStatement(sql);
+			ps.setString(1, "%" + st_name + "%");
+			ResultSet rs = ps.executeQuery();
+			
+			List<StudentVO> stdList = new ArrayList();
+			while(rs.next()) {
+				StudentVO vo = new StudentVO(
+						rs.getString(DBContract.ST_COLUMN.ST_NUM),
+						rs.getString(DBContract.ST_COLUMN.ST_NAME),
+						rs.getString(DBContract.ST_COLUMN.ST_TEL),
+						rs.getString(DBContract.ST_COLUMN.ST_ADDR)
+						);
+				stdList.add(vo);
+			}
+			return stdList;
+			
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 		return null;
 	}
@@ -107,14 +182,56 @@ public class StudentDAOImp implements StudentDAO {
 	@Override
 	public int Update(StudentVO vo) {
 		// TODO Auto-generated method stub
+		String sql = String.format(" UPDATE %s ", DBContract.TABLE_STUDENT);
+		sql += " SET ";
+		sql += String.format(" %s = ?, ", DBContract.ST_COLUMN.ST_NAME);
+		sql += String.format(" %s = ?, ", DBContract.ST_COLUMN.ST_TEL);
+		sql += String.format(" %s = ? ", DBContract.ST_COLUMN.ST_ADDR);
+		sql += String.format(" WHERE %s = ?, ", DBContract.ST_COLUMN.ST_NUM);
+		
+		PreparedStatement ps ;
+		
+		try {
+			ps = dbConn.prepareStatement(sql);
+			ps.setString(1, vo.getSt_name());
+			ps.setString(2, vo.getSt_name());
+			ps.setString(3, vo.getSt_name());
+			ps.setInt(4, Integer.valueOf(vo.getSt_num()));
+			
+			int ret = ps.executeUpdate();
+			
+			return ret;
+			
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		return 0;
 	}
 
 	@Override
 	public int delete(String st_num) {
-		// TODO Auto-generated method stub
+		// TODO 학생정보 삭제
+		String sql = String.format(" DELETE FROM %s ", DBContract.TABLE_STUDENT);
+		sql += String.format(" WHERE %s = ? ", DBContract.ST_COLUMN.ST_NUM);
+		
+		PreparedStatement ps;
+		
+		try {
+			ps = dbConn.prepareStatement(sql);
+			ps.setInt(1, Integer.valueOf(st_num));
+			int ret = ps.executeUpdate();
+			
+			return ret;
+			
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		return 0;
 	}
+	
+	
 	public void insertBulk(List<StudentVO> stdList) {
 		// TODO Sevice에서 생선한 stdList를 매개변수로 받아 DB에  insertBulk하는 메서드
 		

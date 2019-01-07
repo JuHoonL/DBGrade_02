@@ -97,17 +97,146 @@ public class StudentService {
 	}
 
 	private void insertStudent() {
-		// TODO Auto-generated method stub
+		// TODO 학생정보 추가
+		while(true) {
+			System.out.println("========================================================");
+			System.out.println("학생정보추가");
+			System.out.println("========================================================");
+			System.out.print("학번(종료:0) >> ");
+			String strNum = scan.nextLine();
+			int intNum ;
+		
+		
+			try {
+				intNum = Integer.valueOf(strNum);
+			} catch (Exception e) {
+				// TODO: handle exception
+				System.out.println("학번은 숫자로만 입력하세요");
+				continue;
+			}
+			
+			StudentVO stdvo = stdDao.findByNum(strNum);
+			if(stdvo != null) {
+				System.out.println("이미 등록된 학번입니다.");
+				continue;
+			}
+			
+			if(intNum == 0) {
+				System.out.println("학생정보 추가업무 종료!!!");
+				return;
+			}
+			
+			System.out.print("이름 >> ");
+			String strName = scan.nextLine();
+			
+			System.out.print("전화번호 >> ");
+			String strTel = scan.nextLine();
+			
+			System.out.print("주소 >> ");
+			String strAddr = scan.nextLine();
+			
+			StudentVO vo = new StudentVO(
+					strNum, strName, strTel, strAddr
+					);
+			
+			stdDao.insert(vo);
+		}
 		
 	}
 	
 	private void updateStudent() {
-		// TODO Auto-generated method stub
+		// TODO 학생정보 수정
+		System.out.print("검색조건 1.번호    2.이름>> ");
+		String strM = scan.nextLine();
+		StudentVO vo = null;
+		if(Integer.valueOf(strM) == 1) {
+			System.out.print("학번 >> ");
+			String st_num = scan.nextLine();
+			vo = stdDao.findByNum(st_num);
+			viewStudent(vo);
+			
+		} else if(Integer.valueOf(strM) == 2) {
+			System.out.print("이름 >> ");
+			String st_name = scan.nextLine();
+			List<StudentVO> stdList = stdDao.findByName(st_name);
+			viewStudent(stdList);
+		}
 		
 	}
+	
+	private void viewStudent(List<StudentVO> stdList) {
+		// TODO Auto-generated method stub
+		System.out.println("=======================================================");
+		System.out.println("학번\t이름\t전화번호\t주소");
+		System.out.println("-------------------------------------------------------");
+		for(StudentVO vo : stdList) {
+			System.out.print(vo.getSt_num() + "\t");
+			System.out.print(vo.getSt_name() + "\t");
+			System.out.print(vo.getSt_tel() + "\t");
+			System.out.print(vo.getSt_addr() + "\n");
+		}
+		System.out.println("=======================================================");
+	}
+
+	private void viewStudent(StudentVO vo) {
+		if(vo != null) {
+			System.out.println("=======================================================");
+			System.out.println("학번 : " + vo.getSt_num());
+			System.out.println("이름 : " + vo.getSt_name());
+			System.out.println("전화번호 : " + vo.getSt_tel());
+			System.out.println("주소 : " + vo.getSt_addr());
+			System.out.println("=======================================================");
+		} else {
+			System.out.println("학생정보를 찾을수 없음");
+		}
+	}
+	
 
 	private void deleteStudent() {
-		// TODO Auto-generated method stub
+		// TODO 학생정보 삭제
+		System.out.println("=======================================================");
+		System.out.println("학생정보 삭제");
+		System.out.println("=======================================================");
+		while(true) {
+			System.out.print("학번(종료:0)>>");
+			String strM = scan.nextLine();
+			if(strM.equals("0")) return;
+			
+			StudentVO stvo = stdDao.findByNum(strM);
+			if(stvo != null) {
+				this.viewStudent(stvo);
+				System.out.println("==================================================");
+				System.out.print("정말 삭제 할까요?(YES) >> ");
+				String strYes = scan.nextLine();
+				if(strYes.equalsIgnoreCase("YES")) {
+					if(stdDao.delete(strM) > 0) {
+						System.out.println("삭제되었습니다.");
+					} else {
+						System.out.println("삭제가 완료되지 못했습니다.");
+					}
+				} else {
+					System.out.println("찾는 학번이 없습니다.");
+				}
+			}
+//			List<StudentVO> stdList = stdDao.selectAll();
+//			
+//			
+//			for(StudentVO vo : stdList) {
+//				if(strM.equals(vo.getSt_num())) {
+//					viewStudent(vo);
+//					System.out.print("삭제하시겠습니까?(Yes/No)>> ");
+//					String strYN = scan.nextLine();
+//					if(strYN.equalsIgnoreCase("Yes")) {
+//						stdDao.delete(strM);
+//					} else {
+//						System.out.println("삭제가 취소되었습니다.");
+//						return;
+//					}
+//				}
+//			}
+			
+			
+		}
 		
 	}
 
